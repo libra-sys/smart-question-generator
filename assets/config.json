@@ -1,0 +1,56 @@
+{
+  "skill_name": "smart-question-generator",
+  "version": "1.0.0",
+  "description": "智能出题与评测系统 — 基于Bloom分类法的自动化试题生成、难度标定与自动组卷工具",
+  "defaults": {
+    "difficulty_distribution": {"easy": 30, "medium": 50, "hard": 20},
+    "bloom_distribution": {"记忆": 5, "理解": 25, "应用": 40, "分析": 20, "评价": 8, "创造": 2},
+    "total_score": 100,
+    "duration_minutes": 90
+  },
+  "question_types": {
+    "单选题": {"default_points": 5, "suitable_bloom": ["记忆", "理解", "应用", "分析"]},
+    "多选题": {"default_points": 5, "suitable_bloom": ["记忆", "理解", "应用", "分析", "评价"]},
+    "判断题": {"default_points": 2, "suitable_bloom": ["记忆", "理解"]},
+    "填空题": {"default_points": 3, "suitable_bloom": ["记忆", "理解", "应用"]},
+    "简答题": {"default_points": 8, "suitable_bloom": ["记忆", "理解", "应用", "分析", "评价"]},
+    "论述题": {"default_points": 15, "suitable_bloom": ["应用", "分析", "评价", "创造"]},
+    "案例分析题": {"default_points": 15, "suitable_bloom": ["应用", "分析", "评价", "创造"]},
+    "编程题": {"default_points": 15, "suitable_bloom": ["应用", "分析", "评价", "创造"]}
+  },
+  "exam_templates": {
+    "高考数学": {
+      "sections": [
+        {"type": "单选题", "count": 8, "points_per": 5},
+        {"type": "多选题", "count": 4, "points_per": 5},
+        {"type": "填空题", "count": 4, "points_per": 5},
+        {"type": "解答题", "count": 6, "points_distribution": [12, 12, 12, 12, 11, 11]}
+      ],
+      "total_score": 150,
+      "difficulty": {"easy": 30, "medium": 50, "hard": 20}
+    },
+    "单元测验": {
+      "sections": [
+        {"type": "单选题", "count": 8, "points_per": 4},
+        {"type": "填空题", "count": 4, "points_per": 5},
+        {"type": "简答题", "count": 4, "points_per": 12}
+      ],
+      "total_score": 100,
+      "difficulty": {"easy": 40, "medium": 45, "hard": 15}
+    }
+  },
+  "difficulty_formula": {
+    "bloom_weights": {"记忆": 1.0, "理解": 1.5, "应用": 2.0, "分析": 2.5, "评价": 3.0, "创造": 3.5},
+    "coefficients": {"bloom": 1.5, "steps": 0.5, "depth": 0.3},
+    "thresholds": {"easy_max": 3.0, "medium_max": 6.0, "hard_min": 6.1}
+  },
+  "validation_rules": {
+    "require_bloom_annotation": true,
+    "require_difficulty_annotation": true,
+    "require_knowledge_point": true,
+    "require_detailed_answer": true,
+    "require_scoring_rubric": true,
+    "max_difficulty_deviation": 5,
+    "min_knowledge_coverage": 0.8
+  }
+}

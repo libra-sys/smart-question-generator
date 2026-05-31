@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>smart-question-generator — 智能出题与评测系统</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #000; color: #fff; font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; overflow: hidden; }
+  .slide { display: none; width: 100vw; height: 100vh; padding: 60px 80px; flex-direction: column; justify-content: center; position: absolute; top: 0; left: 0; }
+  .slide.active { display: flex; }
+  .slide-num { position: fixed; bottom: 24px; right: 32px; color: #555; font-size: 14px; z-index: 100; }
+  .nav-hint { position: fixed; bottom: 24px; left: 32px; color: #444; font-size: 13px; z-index: 100; }
+  .gradient-text { background: linear-gradient(135deg, #fbbf24, #f97316); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+  .accent-amber { color: #fbbf24; }
+  .accent-orange { color: #f97316; }
+  .accent-green { color: #34d399; }
+  .divider { width: 60px; height: 3px; background: linear-gradient(90deg, #fbbf24, #f97316); margin: 16px 0; border-radius: 2px; }
+  table { border-collapse: collapse; width: 100%; }
+  th { text-align: left; color: #fbbf24; padding: 10px 14px; font-size: 14px; border-bottom: 1px solid #222; }
+  td { padding: 10px 14px; font-size: 14px; border-bottom: 1px solid #1a1a1a; color: #ccc; }
+  .card { background: #111; border: 1px solid #222; border-radius: 12px; padding: 24px; }
+  .badge { display: inline-block; padding: 3px 10px; border-radius: 12px; font-size: 12px; }
+  .badge-green { background: #064e3b; color: #34d399; }
+  .badge-amber { background: #78350f; color: #fbbf24; }
+  .badge-orange { background: #7c2d12; color: #f97316; }
+  .bloom-level { display: flex; align-items: center; gap: 8px; padding: 8px 12px; background: #1a1a1a; border-radius: 8px; margin-bottom: 6px; }
+  .bloom-bar { height: 24px; border-radius: 4px; min-width: 4px; }
+</style>
+</head>
+<body>
+
+<div class="slide active" id="s1">
+  <div style="max-width: 800px;">
+    <div class="badge badge-amber" style="margin-bottom: 24px;">Skill 9/12 · 教育领域</div>
+    <h1 style="font-size: 52px; font-weight: 800; line-height: 1.2; margin-bottom: 20px;">
+      smart-<span class="gradient-text">question-generator</span>
+    </h1>
+    <p style="font-size: 22px; color: #888; margin-bottom: 32px;">智能出题与评测系统 — Bloom分类法驱动的自动化出题引擎</p>
+    <div class="divider"></div>
+    <div style="display: flex; gap: 40px; margin-top: 32px;">
+      <div><span style="color: #555;">评测得分</span><br><span style="font-size: 36px; font-weight: 700; color: #fbbf24;">11/12</span></div>
+      <div><span style="color: #555;">安全扫描</span><br><span style="font-size: 28px; font-weight: 700; color: #34d399;">PASS</span></div>
+      <div><span style="color: #555;">层级</span><br><span style="font-size: 28px; font-weight: 700; color: #fbbf24;">专业层</span></div>
+    </div>
+  </div>
+</div>
+
+<div class="slide" id="s2">
+  <h2 style="font-size: 36px; font-weight: 700; margin-bottom: 8px;">传统出题的<span class="accent-orange">四大痛点</span></h2>
+  <div class="divider"></div>
+  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 24px;">
+    <div class="card">
+      <div style="font-size: 40px; margin-bottom: 8px;">⏱️</div>
+      <h3 style="font-size: 18px; font-weight: 600; margin-bottom: 8px;">出题效率低下</h3>
+      <p style="color: #999; font-size: 14px;">单道高质量题目需5-15分钟，一套10题试卷需2-4小时</p>
+    </div>
+    <div class="card">
+      <div style="font-size: 40px; margin-bottom: 8px;">📊</div>
+      <h3 style="font-size: 18px; font-weight: 600; margin-bottom: 8px;">难度难以量化</h3>
+      <p style="color: #999; font-size: 14px;">依赖教师经验判断，同一题目不同教师给出难度不一致</p>
+    </div>
+    <div class="card">
+      <div style="font-size: 40px; margin-bottom: 8px;">🎯</div>
+      <h3 style="font-size: 18px; font-weight: 600; margin-bottom: 8px;">Bloom层次遗漏</h3>
+      <p style="color: #999; font-size: 14px;">80%的教师出题偏向"记忆/理解"层次，高阶思维考察严重不足</p>
+    </div>
+    <div class="card">
+      <div style="font-size: 40px; margin-bottom: 8px;">🔄</div>
+      <h3 style="font-size: 18px; font-weight: 600; margin-bottom: 8px;">干扰项质量差</h3>
+      <p style="color: #999; font-size: 14px;">选择题干扰项设计随意，"送分题"占比过高</p>
+    </div>
+  </div>
+</div>
+
+<div class="slide" id="s3">
+  <h2 style="font-size: 36px; font-weight: 700; margin-bottom: 8px;">Bloom分类法 <span class="gradient-text">六层次</span>全覆盖</h2>
+  <div class="divider"></div>
+  <div style="display: flex; flex-direction: column; gap: 8px; margin-top: 24px; max-width: 700px;">
+    <div class="bloom-level">
+      <div class="bloom-bar" style="width: 60px; background: #1e40af;"></div>
+      <div><strong style="color: #3b82f6;">创造</strong> <span style="color: #666;">Create</span></div>
+      <div style="margin-left: auto; color: #888; font-size: 13px;">设计实验 / 构建模型 / 创作方案</div>
+      <span class="badge badge-amber">3.5×权重</span>
+    </div>
+    <div class="bloom-level">
+      <div class="bloom-bar" style="width: 70px; background: #7c3aed;"></div>
+      <div><strong style="color: #8b5cf6;">评价</strong> <span style="color: #666;">Evaluate</span></div>
+      <div style="margin-left: auto; color: #888; font-size: 13px;">评判优劣 / 论证观点 / 检测逻辑</div>
+      <span class="badge badge-amber">3.0×权重</span>
+    </div>
+    <div class="bloom-level">
+      <div style="width: 70px; background: #7c3aed; height: 24px; border-radius: 4px;"></div>
+    </div>
+    <div class="bloom-level">
+      <div class="bloom-bar" style="width: 90px; background: #0891b2;"></div>
+      <div><strong style="color: #06b6d4;">分析</strong> <span style="color: #666;">Analyze</span></div>
+      <div style="margin-left: auto; color: #888; font-size: 13px;">解构问题 / 区分要素 / 找关系</div>
+      <span class="badge badge-amber">2.5×权重</span>
+    </div>
+    <div class="bloom-level">
+      <div class="bloom-bar" style="width: 110px; background: #059669;"></div>
+      <div><strong style="color: #34d399;">应用</strong> <span style="color: #666;">Apply</span></div>
+      <div style="margin-left: auto; color: #888; font-size: 13px;">执行程序 / 计算方法 / 使用工具</div>
+      <span class="badge badge-amber">2.0×权重</span>
+    </div>
+    <div class="bloom-level">
+      <div class="bloom-bar" style="width: 120px; background: #ca8a04;"></div>
+      <div><strong style="color: #fbbf24;">理解</strong> <span style="color: #666;">Understand</span></div>
+      <div style="margin-left: auto; color: #888; font-size: 13px;">解释概念 / 举例说明 / 总结归纳</div>
+      <span class="badge badge-amber">1.5×权重</span>
+    </div>
+    <div class="bloom-level">
+      <div class="bloom-bar" style="width: 140px; background: #b91c1c;"></div>
+      <div><strong style="color: #f87171;">记忆</strong> <span style="color: #666;">Remember</span></div>
+      <div style="margin-left: auto; color: #888; font-size: 13px;">识别事实 / 回忆定义 / 列举要素</div>
+      <span class="badge badge-amber">1.0×权重</span>
+    </div>
+  </div>
+  <p style="color: #555; font-size: 13px; margin-top: 16px;">6层次 × 8题型自动适配，难度 = Bloom权重×1.5 + 步骤数×0.5 + 知识深度×0.3</p>
+</div>
+
+<div class="slide" id="s4">
+  <h2 style="font-size: 36px; font-weight: 700; margin-bottom: 8px;">效率提升：<span class="accent-green">10-15倍</span>加速</h2>
+  <div class="divider"></div>
+  <table style="margin-top: 24px;">
+    <thead>
+      <tr><th>出题任务</th><th>传统耗时</th><th>AI辅助</th><th>提升</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>单道选择题</td><td style="color: #f87171;">5-8分钟</td><td style="color: #34d399;">30秒</td><td><span class="badge badge-green">~15×</span></td></tr>
+      <tr><td>单道解答题（含评分标准）</td><td style="color: #f87171;">15-30分钟</td><td style="color: #34d399;">2-3分钟</td><td><span class="badge badge-green">~10×</span></td></tr>
+      <tr><td>完整试卷（10题）</td><td style="color: #f87171;">2-4小时</td><td style="color: #34d399;">15-30分钟</td><td><span class="badge badge-green">~10×</span></td></tr>
+      <tr><td>难度均衡调整</td><td style="color: #f87171;">30-60分钟</td><td style="color: #34d399;">自动</td><td><span class="badge badge-green">∞</span></td></tr>
+      <tr><td>Bloom覆盖检查</td><td style="color: #f87171;">15-30分钟</td><td style="color: #34d399;">自动</td><td><span class="badge badge-green">∞</span></td></tr>
+      <tr><td>干扰项设计</td><td style="color: #f87171;">3-5分钟/题</td><td style="color: #34d399;">自动</td><td><span class="badge badge-green">∞</span></td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="slide" id="s5">
+  <h2 style="font-size: 36px; font-weight: 700; margin-bottom: 8px;">示例：高三数学<span class="accent-amber">函数与导数</span></h2>
+  <div class="divider"></div>
+  <p style="color: #888; margin-bottom: 16px;">10题试卷 · 100分 · Bloom覆盖理解25% 应用43% 分析22% 评价10%</p>
+  <table>
+    <thead>
+      <tr><th>#</th><th>题型</th><th>知识点</th><th>Bloom</th><th>难度</th><th>分值</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>1</td><td>单选</td><td>函数定义域</td><td>理解</td><td><span style="color: #34d399;">易</span></td><td>5</td></tr>
+      <tr><td>2</td><td>单选</td><td>单调性与导数</td><td>应用</td><td><span style="color: #fbbf24;">中</span></td><td>5</td></tr>
+      <tr><td>3</td><td>单选</td><td>指数/对数函数</td><td>应用</td><td><span style="color: #fbbf24;">中</span></td><td>5</td></tr>
+      <tr><td>4</td><td>单选</td><td>导数与极值</td><td>分析</td><td><span style="color: #fbbf24;">中</span></td><td>5</td></tr>
+      <tr><td>5</td><td>单选</td><td>导数与不等式</td><td>评价</td><td><span style="color: #f97316;">难</span></td><td>5</td></tr>
+      <tr><td>6-8</td><td>填空×3</td><td>切线/对数/最值</td><td>理解·应用</td><td>易·中</td><td>15</td></tr>
+      <tr><td>9</td><td>解答</td><td>单调性·极值·不等式</td><td>分析+评价</td><td><span style="color: #fbbf24;">中</span></td><td>28</td></tr>
+      <tr><td>10</td><td>解答</td><td>零点·不等式·极限</td><td>分析+评价</td><td><span style="color: #f97316;">难</span></td><td>32</td></tr>
+    </tbody>
+  </table>
+  <div style="margin-top: 16px; padding: 16px; background: #0a2e1a; border-radius: 8px; border-left: 3px solid #34d399;">
+    <span style="color: #34d399; font-weight: 600;">每道解答题含完整 分步骤评分标准（步骤分+采分点标注）</span>
+  </div>
+</div>
+
+<div class="slide" id="s6">
+  <h2 style="font-size: 36px; font-weight: 700; margin-bottom: 8px;">干扰项<span class="accent-orange">智能设计</span></h2>
+  <div class="divider"></div>
+  <p style="color: #888; margin-bottom: 24px;">基于6类常见错误模式，每个选项都有教学诊断价值</p>
+  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+    <div class="card">
+      <div style="color: #f97316; font-weight: 600; margin-bottom: 6px;">概念混淆</div>
+      <p style="color: #999; font-size: 13px;">相似概念的互换（如有丝分裂/减数分裂）</p>
+    </div>
+    <div class="card">
+      <div style="color: #f97316; font-weight: 600; margin-bottom: 6px;">计算错误</div>
+      <p style="color: #999; font-size: 13px;">基于典型计算失误（忘记进位/符号错误）</p>
+    </div>
+    <div class="card">
+      <div style="color: #f97316; font-weight: 600; margin-bottom: 6px;">逻辑倒置</div>
+      <p style="color: #999; font-size: 13px;">充分条件/必要条件/充要条件互换</p>
+    </div>
+    <div class="card">
+      <div style="color: #f97316; font-weight: 600; margin-bottom: 6px;">部分正确</div>
+      <p style="color: #999; font-size: 13px;">包含正确但不完整的信息</p>
+    </div>
+    <div class="card">
+      <div style="color: #f97316; font-weight: 600; margin-bottom: 6px;">过度推广</div>
+      <p style="color: #999; font-size: 13px;">将特定结论推广到不适用的一般情况</p>
+    </div>
+    <div class="card">
+      <div style="color: #f97316; font-weight: 600; margin-bottom: 6px;">忽略约束</div>
+      <p style="color: #999; font-size: 13px;">忘记定义域/值域等隐含条件</p>
+    </div>
+  </div>
+</div>
+
+<div class="slide" id="s7">
+  <h2 style="font-size: 36px; font-weight: 700; margin-bottom: 8px;">技术<span class="accent-amber">架构</span></h2>
+  <div class="divider"></div>
+  <div style="display: flex; align-items: center; justify-content: center; gap: 12px; flex-wrap: wrap; margin: 32px 0;">
+    <div class="card" style="text-align: center; min-width: 100px;"><div style="font-size: 24px;">📋</div>需求<br>解析</div>
+    <div style="color: #fbbf24; font-size: 24px;">→</div>
+    <div class="card" style="text-align: center; min-width: 100px;"><div style="font-size: 24px;">🧩</div>知识<br>拆解</div>
+    <div style="color: #fbbf24; font-size: 24px;">→</div>
+    <div class="card" style="text-align: center; min-width: 100px;"><div style="font-size: 24px;">✏️</div>逐题<br>生成</div>
+    <div style="color: #fbbf24; font-size: 24px;">→</div>
+    <div class="card" style="text-align: center; min-width: 100px;"><div style="font-size: 24px;">📊</div>难度<br>校验</div>
+    <div style="color: #fbbf24; font-size: 24px;">→</div>
+    <div class="card" style="text-align: center; min-width: 100px;"><div style="font-size: 24px;">📦</div>自动<br>组卷</div>
+    <div style="color: #fbbf24; font-size: 24px;">→</div>
+    <div class="card" style="text-align: center; min-width: 100px; border-color: #f97316;"><div style="font-size: 24px;">✅</div>质量<br>审核</div>
+  </div>
+  <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px;">
+    <div class="card" style="text-align: center;">
+      <div style="font-size: 32px; font-weight: 700; color: #fbbf24;">12项</div>
+      <div style="color: #888; font-size: 13px;">格式验证</div>
+    </div>
+    <div class="card" style="text-align: center;">
+      <div style="font-size: 32px; font-weight: 700; color: #34d399;">100/100</div>
+      <div style="color: #888; font-size: 13px;">安全评分</div>
+    </div>
+    <div class="card" style="text-align: center;">
+      <div style="font-size: 32px; font-weight: 700; color: #f97316;">8种</div>
+      <div style="color: #888; font-size: 13px;">题型支持</div>
+    </div>
+  </div>
+</div>
+
+<div class="slide" id="s8">
+  <h2 style="font-size: 36px; font-weight: 700; margin-bottom: 8px;">多<span class="accent-amber">考试模板</span>支持</h2>
+  <div class="divider"></div>
+  <table style="margin-top: 24px;">
+    <thead>
+      <tr><th>考试类型</th><th>总分</th><th>题型分配</th><th>难度(易:中:难)</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>高考数学（新高考I卷）</td><td>150</td><td>单选8+多选4+填空4+解答6</td><td>30:50:20</td></tr>
+      <tr><td>单元测验</td><td>100</td><td>单选8+填空4+简答4</td><td>40:45:15</td></tr>
+      <tr><td>期中考试</td><td>100</td><td>单选10+填空5+解答3</td><td>30:50:20</td></tr>
+      <tr><td>期末考试</td><td>100</td><td>单选10+填空5+解答4</td><td>25:50:25</td></tr>
+      <tr><td>竞赛选拔</td><td>120</td><td>填空5+解答5+证明2</td><td>10:30:60</td></tr>
+      <tr><td>考研数学一</td><td>150</td><td>单选10+填空6+解答6</td><td>20:50:30</td></tr>
+    </tbody>
+  </table>
+  <p style="color: #555; font-size: 13px; margin-top: 16px;">所有模板可自定义，Bloom层次比例自动校验 ±5%偏差控制</p>
+</div>
+
+<div class="slide" id="s9">
+  <div style="text-align: center; max-width: 700px; margin: 0 auto;">
+    <h2 style="font-size: 42px; font-weight: 800; margin-bottom: 12px;">
+      smart-<span class="gradient-text">question-generator</span>
+    </h2>
+    <p style="color: #888; font-size: 18px; margin-bottom: 36px;">让每一道题都有Bloom层次的灵魂</p>
+    <div class="divider" style="margin: 0 auto 32px;"></div>
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; text-align: left;">
+      <div class="card">
+        <h3 style="color: #fbbf24; font-weight: 600; margin-bottom: 8px;">✅ 核心优势</h3>
+        <ul style="color: #ccc; font-size: 14px; list-style: none; padding: 0;">
+          <li style="margin-bottom: 6px;">· Bloom 6层次全覆盖</li>
+          <li style="margin-bottom: 6px;">· 三维度难度量化评分</li>
+          <li style="margin-bottom: 6px;">· 6类错误模式干扰项</li>
+          <li style="margin-bottom: 6px;">· 多考试模板即开即用</li>
+        </ul>
+      </div>
+      <div class="card">
+        <h3 style="color: #f97316; font-weight: 600; margin-bottom: 8px;">📊 评测数据</h3>
+        <ul style="color: #ccc; font-size: 14px; list-style: none; padding: 0;">
+          <li style="margin-bottom: 6px;">· 评测得分: <span style="color: #fbbf24;">11/12</span></li>
+          <li style="margin-bottom: 6px;">· 安全扫描: <span style="color: #34d399;">100/100</span></li>
+          <li style="margin-bottom: 6px;">· 层级: <span style="color: #fbbf24;">专业层</span></li>
+          <li style="margin-bottom: 6px;">· 百分位: <span style="color: #fbbf24;">92%+</span></li>
+        </ul>
+      </div>
+    </div>
+    <p style="color: #555; font-size: 14px; margin-top: 40px;">v1.0.0 · 12文件闭环 · 2026-05-27</p>
+  </div>
+</div>
+
+<div class="slide-num" id="pageNum">1 / 9</div>
+<div class="nav-hint">← → 键翻页 · Click 翻页</div>
+
+<script>
+  let current = 0;
+  const slides = document.querySelectorAll('.slide');
+  const total = slides.length;
+  document.getElementById('pageNum').textContent = '1 / ' + total;
+  function show(n) {
+    slides[current].classList.remove('active');
+    current = ((n % total) + total) % total;
+    slides[current].classList.add('active');
+    document.getElementById('pageNum').textContent = (current + 1) + ' / ' + total;
+  }
+  document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') show(current + 1);
+    if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') show(current - 1);
+  });
+  document.addEventListener('click', e => e.clientX > innerWidth / 2 ? show(current + 1) : show(current - 1));
+</script>
+</body>
+</html>
